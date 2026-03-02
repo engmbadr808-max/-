@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>مسجد الامير فواز</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+body{
+margin:0;
+font-family:'Cairo',sans-serif;
+background:linear-gradient(135deg,#0f5f73,#083d4a);
+color:white;
+overflow:hidden;
+}
+
+/* الهيدر */
+.header{
+position:absolute;
+top:40px;
+right:80px;
+}
+
+.mosque{
+font-size:34px;
+font-weight:900;
+}
+
+.date{
+font-size:18px;
+opacity:.7;
+}
+
+/* الساعة */
+.clock{
+position:absolute;
+left:80px;
+top:120px;
+text-align:left;
+}
+
+.time{
+font-size:110px;
+font-weight:900;
+}
+
+.seconds{
+font-size:40px;
+opacity:.7;
+}
+
+/* المواقيت */
+.prayer-container{
+position:absolute;
+top:180px;
+right:30%;
+display:flex;
+flex-direction:column;
+gap:25px;
+}
+
+.prayer{
+display:flex;
+justify-content:space-between;
+align-items:center;
+width:420px;
+font-size:42px;
+opacity:.8;
+}
+
+.prayer-time{
+font-size:50px;
+font-weight:900;
+}
+
+.active{
+background:white;
+color:#083d4a;
+padding:15px 30px;
+border-radius:20px;
+box-shadow:0 0 25px rgba(255,255,255,.3);
+}
+
+/* عداد */
+.countdown{
+position:absolute;
+bottom:80px;
+left:50%;
+transform:translateX(-50%);
+font-size:40px;
+font-weight:bold;
+color:#FFD700;
+}
+
+.footer{
+position:absolute;
+bottom:40px;
+right:80px;
+opacity:.6;
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+<div class="mosque">🕌 مسجد الامير فواز</div>
+<div class="date" id="date"></div>
+</div>
+
+<div class="clock">
+<div class="time" id="time"></div>
+<div class="seconds" id="seconds"></div>
+</div>
+
+<div class="prayer-container" id="prayers"></div>
+
+<div class="countdown" id="countdown"></div>
+
+<div class="footer">نسأل الله القبول</div>
+
+<script>
+
+// ---------------- التاريخ ----------------
+function updateDate(){
+const now=new Date();
+document.getElementById("date").innerText=
+now.toLocaleDateString('ar-SA',{
+weekday:'long',
+year:'numeric',
+month:'long',
+day:'numeric'
+});
+}
+updateDate();
+
+// ---------------- الساعة ----------------
+function updateClock(){
+const now=new Date();
+let h=now.getHours();
+let m=now.getMinutes().toString().padStart(2,'0');
+let s=now.getSeconds().toString().padStart(2,'0');
+
+document.getElementById("time").innerText=`${h}:${m}`;
+document.getElementById("seconds").innerText=s;
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// ---------------- مواقيت الصلاة ----------------
+let prayerTimes=[];
+let prayerNames=["الفجر","الشروق","الظهر","العصر","المغرب","العشاء"];
+
+async function getPrayerTimes(){
+const res=await fetch("https://api.aladhan.com/v1/timingsByCity?city=Jeddah&country=Saudi Arabia&method=4");
+const data=await res.json();
+const t=data.data.timings;
+
+prayerTimes=[
+t.Fajr,
+t.Sunrise,
+t.Dhuhr,
+t.Asr,
+t.Maghrib,
+t.Isha
+];
+
+renderPrayers();
+}
+getPrayerTimes();
+
+function renderPrayers(){
+let html="";
+prayerTimes.forEach((time,index)=>{
+html+=`
+<div class="prayer" id="prayer${index}">
+<div>${prayerNames[index]}</div>
+<div class="prayer-time">${time}</div>
+</div>
+`;
+});
+document.getElementById("prayers").innerHTML=html;
+highlightCurrentPrayer();
+}
+
+// ---------------- تمييز الصلاة الحالية + عداد ----------------
+function highlightCurrentPrayer(){
+setInterval(()=>{
+let now=new Date();
+let nextPrayer=null;
+
+prayerTimes.forEach((time,index)=>{
+let [h,m]=time.split(":");
+let prayerDate=new Date();
+prayerDate.setHours(h,m,0);
+
+let element=document.getElementById("prayer"+index);
+element.classList.remove("active");
+
+if(now>=prayerDate){
+element.classList.add("active");
+}
+
+if(now<prayerDate && !nextPrayer){
+nextPrayer=prayerDate;
+}
+});
+
+if(nextPrayer){
+let diff=(nextPrayer-now)/1000;
+let min=Math.floor(diff/60);
+let sec=Math.floor(diff%60);
+document.getElementById("countdown").innerText=
+`متبقي على الصلاة القادمة ${min}:${sec}`;
+}
+
+},1000);
+}
+
+</script>
+
+</body>
+</html>
