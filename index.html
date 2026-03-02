@@ -2,222 +2,210 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>مسجد الامير فواز</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مسجد الأمير فواز</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;900&display=swap" rel="stylesheet">
 
 <style>
 body{
-margin:0;
-font-family:'Cairo',sans-serif;
-background:linear-gradient(135deg,#0f5f73,#083d4a);
-color:white;
-overflow:hidden;
+    margin:0;
+    font-family:'Cairo', sans-serif;
+    background:linear-gradient(rgba(0,0,0,.7),rgba(0,0,0,.7)),
+    url('https://images.unsplash.com/photo-1584551246679-0daf3d275d0f');
+    background-size:cover;
+    background-position:center;
+    color:white;
+    text-align:center;
 }
 
-/* الهيدر */
-.header{
-position:absolute;
-top:40px;
-right:80px;
+h1{
+    font-size:55px;
+    margin-top:20px;
+    color:gold;
 }
 
-.mosque{
-font-size:34px;
-font-weight:900;
+#digitalClock{
+    font-size:70px;
+    margin-top:10px;
 }
 
-.date{
-font-size:18px;
-opacity:.7;
-}
-
-/* الساعة */
 .clock{
-position:absolute;
-left:80px;
-top:120px;
-text-align:left;
+    width:200px;
+    height:200px;
+    border:8px solid gold;
+    border-radius:50%;
+    margin:20px auto;
+    position:relative;
 }
 
-.time{
-font-size:110px;
-font-weight:900;
+.hand{
+    position:absolute;
+    bottom:50%;
+    left:50%;
+    transform-origin:bottom;
+    background:white;
 }
 
-.seconds{
-font-size:40px;
-opacity:.7;
+.hour{ width:6px; height:50px; }
+.minute{ width:4px; height:70px; }
+.second{ width:2px; height:90px; background:red;}
+
+.prayer-times{
+    margin-top:20px;
+    font-size:40px;
+    background:rgba(0,0,0,.6);
+    padding:20px;
+    border-radius:15px;
+    width:80%;
+    margin:auto;
 }
 
-/* المواقيت */
-.prayer-container{
-position:absolute;
-top:180px;
-right:30%;
-display:flex;
-flex-direction:column;
-gap:25px;
+.next-prayer{
+    font-size:35px;
+    color:gold;
+    margin-top:15px;
 }
 
-.prayer{
-display:flex;
-justify-content:space-between;
-align-items:center;
-width:420px;
-font-size:42px;
-opacity:.8;
+.azkar{
+    margin-top:30px;
+    font-size:30px;
+    background:rgba(0,0,0,.7);
+    padding:20px;
+    border-radius:15px;
+    width:80%;
+    margin:auto;
 }
-
-.prayer-time{
-font-size:50px;
-font-weight:900;
-}
-
-.active{
-background:white;
-color:#083d4a;
-padding:15px 30px;
-border-radius:20px;
-box-shadow:0 0 25px rgba(255,255,255,.3);
-}
-
-/* عداد */
-.countdown{
-position:absolute;
-bottom:80px;
-left:50%;
-transform:translateX(-50%);
-font-size:40px;
-font-weight:bold;
-color:#FFD700;
-}
-
-.footer{
-position:absolute;
-bottom:40px;
-right:80px;
-opacity:.6;
-}
-
 </style>
 </head>
 <body>
 
-<div class="header">
-<div class="mosque">🕌 مسجد الامير فواز</div>
-<div class="date" id="date"></div>
-</div>
+<h1>مسجد الأمير فواز</h1>
+
+<div id="digitalClock"></div>
 
 <div class="clock">
-<div class="time" id="time"></div>
-<div class="seconds" id="seconds"></div>
+    <div class="hand hour" id="hour"></div>
+    <div class="hand minute" id="minute"></div>
+    <div class="hand second" id="second"></div>
 </div>
 
-<div class="prayer-container" id="prayers"></div>
+<div class="prayer-times" id="prayerTimes">
+    جاري تحميل مواقيت الصلاة...
+</div>
 
-<div class="countdown" id="countdown"></div>
+<div class="next-prayer" id="countdown"></div>
 
-<div class="footer">نسأل الله القبول</div>
+<div class="azkar" id="azkarBox">
+    جاري تحميل الأذكار...
+</div>
 
 <script>
 
-// ---------------- التاريخ ----------------
-function updateDate(){
-const now=new Date();
-document.getElementById("date").innerText=
-now.toLocaleDateString('ar-SA',{
-weekday:'long',
-year:'numeric',
-month:'long',
-day:'numeric'
-});
-}
-updateDate();
-
-// ---------------- الساعة ----------------
+// الساعة الرقمية والعقارب
 function updateClock(){
-const now=new Date();
-let h=now.getHours();
-let m=now.getMinutes().toString().padStart(2,'0');
-let s=now.getSeconds().toString().padStart(2,'0');
+    const now = new Date();
 
-document.getElementById("time").innerText=`${h}:${m}`;
-document.getElementById("seconds").innerText=s;
+    document.getElementById("digitalClock").innerText =
+        now.toLocaleTimeString('ar-EG');
+
+    const hour = now.getHours() % 12;
+    const minute = now.getMinutes();
+    const second = now.getSeconds();
+
+    document.getElementById("hour").style.transform =
+        `translateX(-50%) rotate(${hour*30 + minute/2}deg)`;
+
+    document.getElementById("minute").style.transform =
+        `translateX(-50%) rotate(${minute*6}deg)`;
+
+    document.getElementById("second").style.transform =
+        `translateX(-50%) rotate(${second*6}deg)`;
 }
 setInterval(updateClock,1000);
 updateClock();
 
-// ---------------- مواقيت الصلاة ----------------
-let prayerTimes=[];
-let prayerNames=["الفجر","الشروق","الظهر","العصر","المغرب","العشاء"];
 
-async function getPrayerTimes(){
-const res=await fetch("https://api.aladhan.com/v1/timingsByCity?city=Jeddah&country=Saudi Arabia&method=4");
-const data=await res.json();
-const t=data.data.timings;
+// مواقيت الصلاة (جدة - السعودية)
+fetch("https://api.aladhan.com/v1/timingsByCity?city=Jeddah&country=Saudi Arabia&method=4")
+.then(res=>res.json())
+.then(data=>{
+    const t = data.data.timings;
 
-prayerTimes=[
-t.Fajr,
-t.Sunrise,
-t.Dhuhr,
-t.Asr,
-t.Maghrib,
-t.Isha
+    const prayers = {
+        "الفجر":t.Fajr,
+        "الظهر":t.Dhuhr,
+        "العصر":t.Asr,
+        "المغرب":t.Maghrib,
+        "العشاء":t.Isha
+    };
+
+    let html="";
+    for(let p in prayers){
+        html+=`<div>${p} : ${prayers[p]}</div>`;
+    }
+    document.getElementById("prayerTimes").innerHTML=html;
+
+    startCountdown(prayers);
+});
+
+// عداد الصلاة القادمة
+function startCountdown(prayers){
+    setInterval(()=>{
+        const now=new Date();
+        let nextPrayerName="";
+        let nextTime=null;
+
+        for(let name in prayers){
+            const [h,m]=prayers[name].split(":");
+            let prayerTime=new Date();
+            prayerTime.setHours(h,m,0);
+
+            if(prayerTime>now){
+                nextPrayerName=name;
+                nextTime=prayerTime;
+                break;
+            }
+        }
+
+        if(!nextTime){
+            const [h,m]=prayers["الفجر"].split(":");
+            nextTime=new Date();
+            nextTime.setDate(nextTime.getDate()+1);
+            nextTime.setHours(h,m,0);
+            nextPrayerName="الفجر";
+        }
+
+        const diff=nextTime-now;
+        const hrs=Math.floor(diff/1000/60/60);
+        const mins=Math.floor((diff/1000/60)%60);
+        const secs=Math.floor((diff/1000)%60);
+
+        document.getElementById("countdown").innerText=
+        `الصلاة القادمة: ${nextPrayerName} بعد ${hrs}:${mins}:${secs}`;
+    },1000);
+}
+
+
+// الأذكار والأدعية
+const azkar = [
+"اللهم صل وسلم على نبينا محمد",
+"سبحان الله وبحمده سبحان الله العظيم",
+"اللهم اغفر لي ولوالدي وللمسلمين",
+"أستغفر الله العظيم وأتوب إليه",
+"اللهم اجعل هذا البلد آمناً مطمئناً",
+"اللهم تقبل منا إنك أنت السميع العليم",
+"اللهم ارزقنا الإخلاص في القول والعمل"
 ];
 
-renderPrayers();
+let index=0;
+function changeZekr(){
+    document.getElementById("azkarBox").innerText=azkar[index];
+    index++;
+    if(index>=azkar.length) index=0;
 }
-getPrayerTimes();
-
-function renderPrayers(){
-let html="";
-prayerTimes.forEach((time,index)=>{
-html+=`
-<div class="prayer" id="prayer${index}">
-<div>${prayerNames[index]}</div>
-<div class="prayer-time">${time}</div>
-</div>
-`;
-});
-document.getElementById("prayers").innerHTML=html;
-highlightCurrentPrayer();
-}
-
-// ---------------- تمييز الصلاة الحالية + عداد ----------------
-function highlightCurrentPrayer(){
-setInterval(()=>{
-let now=new Date();
-let nextPrayer=null;
-
-prayerTimes.forEach((time,index)=>{
-let [h,m]=time.split(":");
-let prayerDate=new Date();
-prayerDate.setHours(h,m,0);
-
-let element=document.getElementById("prayer"+index);
-element.classList.remove("active");
-
-if(now>=prayerDate){
-element.classList.add("active");
-}
-
-if(now<prayerDate && !nextPrayer){
-nextPrayer=prayerDate;
-}
-});
-
-if(nextPrayer){
-let diff=(nextPrayer-now)/1000;
-let min=Math.floor(diff/60);
-let sec=Math.floor(diff%60);
-document.getElementById("countdown").innerText=
-`متبقي على الصلاة القادمة ${min}:${sec}`;
-}
-
-},1000);
-}
+setInterval(changeZekr,8000);
+changeZekr();
 
 </script>
 
